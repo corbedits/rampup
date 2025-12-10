@@ -102,7 +102,7 @@ function App() {
 
   const getEmailPath = (email) => {
     const folder = selectedFunnel === 'coldProspects' ? 'COLD PROSPECTS' : 'EXISTING CLIENTS'
-    return `/${folder}/${email.file}`
+    return `${folder}/${email.file}`
   }
 
   const handlePrevious = () => {
