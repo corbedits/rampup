@@ -31,8 +31,36 @@ function App() {
   const [userName, setUserName] = useState(() => localStorage.getItem('gso-reviewer-name') || '')
   const [showNamePrompt, setShowNamePrompt] = useState(!localStorage.getItem('gso-reviewer-name'))
 
-  // Subscribe to comments from Firestore
+  // Check for deep linking on mount
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const emailId = params.get('email')
+
+    if (emailId) {
+      // Find the email in either list
+      const coldEmail = emails.coldProspects.find(e => e.id === emailId)
+      if (coldEmail) {
+        setSelectedFunnel('coldProspects')
+        setSelectedEmail(coldEmail)
+        return
+      }
+
+      const existingEmail = emails.existingClients.find(e => e.id === emailId)
+      if (existingEmail) {
+        setSelectedFunnel('existingClients')
+        setSelectedEmail(existingEmail)
+        return
+      }
+    }
+  }, [])
+
+  // Update URL and fetch comments when email changes
+  useEffect(() => {
+    // Update URL without reloading
+    const url = new URL(window.location)
+    url.searchParams.set('email', selectedEmail.id)
+    window.history.pushState({}, '', url)
+
     const commentsRef = collection(db, 'comments', selectedEmail.id, 'items')
     const q = query(commentsRef, orderBy('timestamp', 'desc'))
 
@@ -47,7 +75,7 @@ function App() {
     })
 
     return () => unsubscribe()
-  }, [selectedEmail.id])
+  }, [selectedEmail.id, selectedEmail]) // Added selectedEmail to dependency to ensure we have the full object if needed, though id is sufficient for logic
 
   const handleSaveName = () => {
     if (userName.trim()) {
