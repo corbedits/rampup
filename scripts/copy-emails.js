@@ -18,6 +18,15 @@ const directoriesToCopy = [
 async function copyEmails() {
     console.log('Starting email copy process...');
 
+    // Clean dist directory manually since we disabled emptyOutDir in vite (to avoid rimraf issues)
+    const distPath = path.join(projectRoot, 'dist');
+    try {
+        await fs.emptyDir(distPath);
+        console.log('✅ Cleaned dist directory');
+    } catch (err) {
+        console.warn('⚠️ Could not clean dist directory:', err.message);
+    }
+
     for (const dir of directoriesToCopy) {
         const srcPath = path.join(sourceRoot, dir);
         const destPath = path.join(projectRoot, 'public', dir);
